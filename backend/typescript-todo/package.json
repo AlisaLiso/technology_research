@@ -1,0 +1,23 @@
+{
+  "name": "typescript-todo",
+  "version": "1.0.0",
+  "description": "Typescript Todo application",
+  "main": "index.js",
+  "scripts": {
+    "start": "webpack-dev-server --host 0.0.0.0 --disable-host-check",
+    "todo": "tsc src/js/test/test.ts; node src/js/test/test.js"
+  },
+  "author": "alisaliso",
+  "devDependencies": {
+    "@babel/core": "^7.8.4",
+    "@babel/preset-env": "^7.8.4",
+    "babel-loader": "^8.0.6",
+    "html-webpack-plugin": "^3.2.0",
+    "ts-loader": "^6.2.1",
+    "webpack": "^4.41.5",
+    "webpack-cli": "^3.3.10",
+    "webpack-dev-server": "^3.10.2"
+  },
+  "dependencies": {},
+  "license": "ISC"
+}
