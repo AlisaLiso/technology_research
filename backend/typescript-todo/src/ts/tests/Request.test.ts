@@ -93,17 +93,17 @@ export default class RequestTests {
   getTodoTest() {
     const req = http.request(optionsCreate, (res) => {
       res.on('data', (_data) => {
-        const reqOnDelete = http.request(optionsGet, (res) => {
+        const reqOnGet = http.request(optionsGet, (res) => {
           res.on('data', (data) => {
             const stringData = JSON.parse(data.toString());
             this.assert("getTodoTest", stringData.title, todoTitle);
           });
         });
 
-        reqOnDelete.on('error', (e) => {
+        reqOnGet.on('error', (e) => {
           console.error(e);
         });
-        reqOnDelete.end();
+        reqOnGet.end();
       });
     });
 
@@ -139,17 +139,17 @@ export default class RequestTests {
   updateTodoTest() {
     const req = http.request(optionsCreate, (res) => {
       res.on('data', (data) => {
-        const reqOnDelete = http.request(optionsPatch, (res) => {
+        const reqOnUpdate = http.request(optionsPatch, (res) => {
           res.on('data', (data) => {
             const stringData = JSON.parse(data.toString());
             this.assert("updateTodoTest", stringData, 1);
           });
         });
 
-        reqOnDelete.on('error', (e) => {
+        reqOnUpdate.on('error', (e) => {
           console.error(e);
         });
-        reqOnDelete.end();
+        reqOnUpdate.end();
       });
     });
 
