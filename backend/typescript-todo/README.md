@@ -7,6 +7,5 @@ $ docker-compose up
 
 #Terminal 2
 $ docker-compose exec app bash
-$ tsc
-$ npm run start
+$ tsc app.ts; node app.js
 ```
