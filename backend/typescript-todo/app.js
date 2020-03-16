@@ -15,8 +15,10 @@ var createTodo = function (_req, res, data) {
         res.end(JSON.stringify(data));
     });
 };
-var deleteTodo = function (_req, res) {
-    todo["delete"]("title", todoTitle).then(function (data) {
+var deleteTodo = function (_req, res, match) {
+    var idTodo = parseFloat(match[0]);
+    todo["delete"]("id", idTodo).then(function (data) {
+        console.log(data);
         res.statusCode = 200;
         res.setHeader("Content-Type", "application/json");
         res.end(JSON.stringify(data));
@@ -48,21 +50,25 @@ var getAllTodo = function (_req, res) {
     });
 };
 var handleRequest = function (req, res) {
-    var data = [];
-    req.on('data', function (chunk) {
-        data.push(chunk);
-    });
-    req.on('end', function () {
-        var parsedData = JSON.parse(data);
-        if (req.url === "/todo" && req.method === "PUT") { // POST TODO
+    if (req.url === "/todo" && req.method === "PUT") { // POST TODO
+        var data_1 = [];
+        req.on('data', function (chunk) {
+            data_1.push(chunk);
+        });
+        req.on('end', function () {
+            var parsedData = JSON.parse(data_1);
             createTodo(req, res, parsedData);
-        }
-        else {
-            res.statusCode = 404;
-            res.setHeader("Content-Type", "text/plain");
-            res.end("Page doesn't exist");
-        }
-    });
+        });
+    }
+    else if (req.url.match(/\d.+$/) && req.method === "DELETE") {
+        var match = req.url.match(/\d.+$/);
+        deleteTodo(req, res, match);
+    }
+    else {
+        res.statusCode = 404;
+        res.setHeader("Content-Type", "text/plain");
+        res.end("Page doesn't exist");
+    }
 };
 var server = http.createServer(handleRequest);
 server.listen(port, hostname, function () {

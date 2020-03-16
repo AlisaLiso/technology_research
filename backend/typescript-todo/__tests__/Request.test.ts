@@ -1,6 +1,9 @@
 import http = require("http");
 import * as fs from 'fs';
 
+import Todo from '../src/ts/components/Todo';
+const todo = new Todo();
+
 const hostname = "0.0.0.0";
 const port = 3000;
 const todoTitle = 'Hello world!';
@@ -39,10 +42,11 @@ export default class RequestTests {
       'title': todoTitle
     });
 
-    const req = http.request({...options, path: '/todo', method: 'PUT', headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      'Content-Length': Buffer.byteLength(postData)
-    }}, (res) => {
+    const req = http.request({
+      ...options, path: '/todo', method: 'PUT', headers: {
+        'Content-Type': 'application/json'
+      }
+    }, (res) => {
       res.on('data', (data) => {
         const stringData = JSON.parse(data.toString());
         this.assert("createTodoTest", stringData.title, todoTitle);
@@ -57,36 +61,24 @@ export default class RequestTests {
   }
 
   deleteTodoTest() {
-    const optionsDelete = {
-      hostname,
-      port,
-      path: '/todo',
-      method: 'DELETE'
-    };
-
-    const req = http.request(optionsCreate, (res) => {
-      res.on('data', (data) => {
-        const stringData = JSON.parse(data.toString());
-        if (stringData.title === todoTitle) {
-          const reqOnDelete = http.request(optionsDelete, (res) => {
-            res.on('data', (data) => {
-              const stringData = JSON.parse(data.toString());
-              this.assert("deleteTodoTest", stringData, 1);
-            });
-          });
-
-          reqOnDelete.on('error', (e) => {
-            console.error(e);
-          });
-          reqOnDelete.end();
+    const newTodo = todo.create(todoTitle);
+    newTodo.then((data) => {
+      const req = http.request({
+        ...options, path: `/todo/${data.id}`, method: 'DELETE', headers: {
+          'Content-Type': 'application/json'
         }
+      }, (res) => {
+        res.on('data', (data) => {
+          const stringData = JSON.parse(data.toString());
+          this.assert("deleteTodoTest", stringData, 1);
+        });
       });
-    });
 
-    req.on('error', (e) => {
-      console.error(e);
+      req.on('error', (e) => {
+        console.error(e);
+      });
+      req.end();
     });
-    req.end();
   }
 
   getTodoTest() {
@@ -187,7 +179,7 @@ export default class RequestTests {
 
   static async run() {
     const requestTests = new RequestTests();
-    const tests = [requestTests.createTodoTest]; //  requestTests.deleteTodoTest, requestTests.getTodoTest, requestTests.updateTodoTest, requestTests.getAllTodoTest
+    const tests = [requestTests.createTodoTest, requestTests.deleteTodoTest]; // requestTests.getTodoTest, requestTests.updateTodoTest, requestTests.getAllTodoTest
 
     for (const test of tests) {
       await requestTests.cleanUp(test).then(({ title, isSuccess, original = null, target = null }: { title: string, isSuccess: boolean, original: object | null, target: object | null }) => {

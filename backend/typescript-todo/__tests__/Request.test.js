@@ -49,6 +49,8 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 exports.__esModule = true;
 var http = require("http");
 var fs = require("fs");
+var Todo_1 = require("../src/ts/components/Todo");
+var todo = new Todo_1["default"]();
 var hostname = "0.0.0.0";
 var port = 3000;
 var todoTitle = 'Hello world!';
@@ -83,8 +85,7 @@ var RequestTests = /** @class */ (function () {
             'title': todoTitle
         });
         var req = http.request(__assign(__assign({}, options), { path: '/todo', method: 'PUT', headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'Content-Length': Buffer.byteLength(postData)
+                'Content-Type': 'application/json'
             } }), function (res) {
             res.on('data', function (data) {
                 var stringData = JSON.parse(data.toString());
@@ -99,33 +100,21 @@ var RequestTests = /** @class */ (function () {
     };
     RequestTests.prototype.deleteTodoTest = function () {
         var _this = this;
-        var optionsDelete = {
-            hostname: hostname,
-            port: port,
-            path: '/todo',
-            method: 'DELETE'
-        };
-        var req = http.request(optionsCreate, function (res) {
-            res.on('data', function (data) {
-                var stringData = JSON.parse(data.toString());
-                if (stringData.title === todoTitle) {
-                    var reqOnDelete = http.request(optionsDelete, function (res) {
-                        res.on('data', function (data) {
-                            var stringData = JSON.parse(data.toString());
-                            _this.assert("deleteTodoTest", stringData, 1);
-                        });
-                    });
-                    reqOnDelete.on('error', function (e) {
-                        console.error(e);
-                    });
-                    reqOnDelete.end();
-                }
+        var newTodo = todo.create(todoTitle);
+        newTodo.then(function (data) {
+            var req = http.request(__assign(__assign({}, options), { path: "/todo/" + data.id, method: 'DELETE', headers: {
+                    'Content-Type': 'application/json'
+                } }), function (res) {
+                res.on('data', function (data) {
+                    var stringData = JSON.parse(data.toString());
+                    _this.assert("deleteTodoTest", stringData, 1);
+                });
             });
+            req.on('error', function (e) {
+                console.error(e);
+            });
+            req.end();
         });
-        req.on('error', function (e) {
-            console.error(e);
-        });
-        req.end();
     };
     RequestTests.prototype.getTodoTest = function () {
         var _this = this;
@@ -224,7 +213,7 @@ var RequestTests = /** @class */ (function () {
                 switch (_a.label) {
                     case 0:
                         requestTests = new RequestTests();
-                        tests = [requestTests.createTodoTest];
+                        tests = [requestTests.createTodoTest, requestTests.deleteTodoTest];
                         _i = 0, tests_1 = tests;
                         _a.label = 1;
                     case 1:

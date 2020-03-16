@@ -17,8 +17,9 @@ const createTodo = (_req, res, data) => { // curl -X PUT -H "Content-Type: appli
   });
 };
 
-const deleteTodo = (_req, res) => {
-  todo.delete("title", todoTitle).then((data) => {
+const deleteTodo = (_req, res, match) => {
+  const idTodo = parseFloat(match[0]);
+  todo.delete("id", idTodo).then((data) => {
     res.statusCode = 200;
     res.setHeader("Content-Type", "application/json");
     res.end(JSON.stringify(data));
@@ -55,20 +56,23 @@ const getAllTodo = (_req, res) => {
 }
 
 const handleRequest = (req, res) => {
-  let data = []
-  req.on('data', chunk => {
-    data.push(chunk)
-  })
-  req.on('end', () => {
-    let parsedData = JSON.parse(data);
-    if (req.url === "/todo" && req.method === "PUT") { // POST TODO
+  if (req.url === "/todo" && req.method === "PUT") { // POST TODO
+    let data = []
+    req.on('data', chunk => {
+      data.push(chunk)
+    })
+    req.on('end', () => {
+      let parsedData = JSON.parse(data);
       createTodo(req, res, parsedData);
-    } else {
-      res.statusCode = 404;
-      res.setHeader("Content-Type", "text/plain");
-      res.end("Page doesn't exist");
-    }
-  })
+    })
+  } else if (req.url.match(/\d.+$/) && req.method === "DELETE") {
+    const match = req.url.match(/\d.+$/);
+    deleteTodo(req, res, match);
+  } else {
+    res.statusCode = 404;
+    res.setHeader("Content-Type", "text/plain");
+    res.end("Page doesn't exist");
+  }
 
 };
 

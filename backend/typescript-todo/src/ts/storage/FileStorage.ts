@@ -69,7 +69,6 @@ export default class FileStorage {
       });
 
       return count;
-
     })
   }
 
