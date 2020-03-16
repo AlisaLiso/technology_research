@@ -103,49 +103,50 @@ export default class RequestTests {
   }
 
   getAllTodoTest() {
-    const req = http.request(optionsCreate, (res) => {
-      res.on('data', (_data) => {
-        const reqOnGetAll = http.request(optionsGetAll, (res) => {
-          res.on('data', (data) => {
-            const stringData = JSON.parse(data.toString());
-            this.assert("getAllTodoTest", stringData[0].title, todoTitle);
-          });
+    const newTodo = todo.create(todoTitle);
+    newTodo.then((_data) => {
+      const req = http.request({
+        ...options, path: `/todo`, method: 'GET', headers: {
+          'Content-Type': 'application/json'
+        }
+      }, (res) => {
+        res.on('data', (data) => {
+          const stringData = JSON.parse(data.toString());
+          this.assert("getAllTodoTest", stringData[0].title, todoTitle);
         });
-
-        reqOnGetAll.on('error', (e) => {
-          console.error(e);
-        });
-        reqOnGetAll.end();
       });
-    });
 
-    req.on('error', (e) => {
-      console.error(e);
+      req.on('error', (e) => {
+        console.error(e);
+      });
+      req.end();
     });
-    req.end();
   }
 
   updateTodoTest() {
-    const req = http.request(optionsCreate, (res) => {
-      res.on('data', (data) => {
-        const reqOnUpdate = http.request(optionsPatch, (res) => {
-          res.on('data', (data) => {
-            const stringData = JSON.parse(data.toString());
-            this.assert("updateTodoTest", stringData, 1);
-          });
-        });
+    const postData = JSON.stringify({
+      'title': 'New title'
+    });
 
-        reqOnUpdate.on('error', (e) => {
-          console.error(e);
+    const newTodo = todo.create(todoTitle);
+    newTodo.then((data) => {
+      const req = http.request({
+        ...options, path: `/todo/${data.id}`, method: 'POST', headers: {
+          'Content-Type': 'application/json'
+        }
+      }, (res) => {
+        res.on('data', (data) => {
+          const stringData = JSON.parse(data.toString());
+          this.assert("updateTodoTest", stringData, 1);
         });
-        reqOnUpdate.end();
       });
-    });
 
-    req.on('error', (e) => {
-      console.error(e);
+      req.on('error', (e) => {
+        console.error(e);
+      });
+      req.write(postData);
+      req.end();
     });
-    req.end();
   }
 
   assert(title: string, original: object | number, target: string | number | object) {
@@ -177,7 +178,7 @@ export default class RequestTests {
 
   static async run() {
     const requestTests = new RequestTests();
-    const tests = [requestTests.createTodoTest, requestTests.deleteTodoTest, requestTests.getTodoTest]; // requestTests.updateTodoTest, requestTests.getAllTodoTest
+    const tests = [requestTests.createTodoTest, requestTests.deleteTodoTest, requestTests.getTodoTest, requestTests.getAllTodoTest, requestTests.updateTodoTest];
 
     for (const test of tests) {
       await requestTests.cleanUp(test).then(({ title, isSuccess, original = null, target = null }: { title: string, isSuccess: boolean, original: object | null, target: object | null }) => {

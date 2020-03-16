@@ -136,45 +136,43 @@ var RequestTests = /** @class */ (function () {
     };
     RequestTests.prototype.getAllTodoTest = function () {
         var _this = this;
-        var req = http.request(optionsCreate, function (res) {
-            res.on('data', function (_data) {
-                var reqOnGetAll = http.request(optionsGetAll, function (res) {
-                    res.on('data', function (data) {
-                        var stringData = JSON.parse(data.toString());
-                        _this.assert("getAllTodoTest", stringData[0].title, todoTitle);
-                    });
+        var newTodo = todo.create(todoTitle);
+        newTodo.then(function (_data) {
+            var req = http.request(__assign(__assign({}, options), { path: "/todo", method: 'GET', headers: {
+                    'Content-Type': 'application/json'
+                } }), function (res) {
+                res.on('data', function (data) {
+                    var stringData = JSON.parse(data.toString());
+                    _this.assert("getAllTodoTest", stringData[0].title, todoTitle);
                 });
-                reqOnGetAll.on('error', function (e) {
-                    console.error(e);
-                });
-                reqOnGetAll.end();
             });
+            req.on('error', function (e) {
+                console.error(e);
+            });
+            req.end();
         });
-        req.on('error', function (e) {
-            console.error(e);
-        });
-        req.end();
     };
     RequestTests.prototype.updateTodoTest = function () {
         var _this = this;
-        var req = http.request(optionsCreate, function (res) {
-            res.on('data', function (data) {
-                var reqOnUpdate = http.request(optionsPatch, function (res) {
-                    res.on('data', function (data) {
-                        var stringData = JSON.parse(data.toString());
-                        _this.assert("updateTodoTest", stringData, 1);
-                    });
+        var postData = JSON.stringify({
+            'title': 'New title'
+        });
+        var newTodo = todo.create(todoTitle);
+        newTodo.then(function (data) {
+            var req = http.request(__assign(__assign({}, options), { path: "/todo/" + data.id, method: 'POST', headers: {
+                    'Content-Type': 'application/json'
+                } }), function (res) {
+                res.on('data', function (data) {
+                    var stringData = JSON.parse(data.toString());
+                    _this.assert("updateTodoTest", stringData, 1);
                 });
-                reqOnUpdate.on('error', function (e) {
-                    console.error(e);
-                });
-                reqOnUpdate.end();
             });
+            req.on('error', function (e) {
+                console.error(e);
+            });
+            req.write(postData);
+            req.end();
         });
-        req.on('error', function (e) {
-            console.error(e);
-        });
-        req.end();
     };
     RequestTests.prototype.assert = function (title, original, target) {
         if (original === target) {
@@ -210,7 +208,7 @@ var RequestTests = /** @class */ (function () {
                 switch (_a.label) {
                     case 0:
                         requestTests = new RequestTests();
-                        tests = [requestTests.createTodoTest, requestTests.deleteTodoTest, requestTests.getTodoTest];
+                        tests = [requestTests.createTodoTest, requestTests.deleteTodoTest, requestTests.getTodoTest, requestTests.getAllTodoTest, requestTests.updateTodoTest];
                         _i = 0, tests_1 = tests;
                         _a.label = 1;
                     case 1:

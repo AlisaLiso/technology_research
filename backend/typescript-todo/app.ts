@@ -6,8 +6,6 @@ const todo = new Todo();
 
 const hostname = "0.0.0.0";
 const port = 3000;
-const todoTitle = 'New Static Title';
-const newTitle = "New title";
 
 const createTodo = (_req, res, data) => { // curl -X PUT -H "Content-Type: application/json" -d '{"title":"Make chocolat tart"}' http://0.0.0.0:3000/todo
   todo.create(data.title).then((data) => {
@@ -37,13 +35,10 @@ const getTodo = (_req, res, match) => {
   });
 }
 
-const updateTodo = (_req, res) => {
-  const options = {
-    title: newTitle,
-    updated: new Date()
-  };
+const updateTodo = (_req, res, match, parsedData) => {
+  const idTodo = parseFloat(match[0]);
 
-  todo.update("title", todoTitle, options).then((data) => {
+  todo.update("id", idTodo, parsedData).then((data) => {
     res.statusCode = 200;
     res.setHeader("Content-Type", "application/json");
     res.end(JSON.stringify(data));
@@ -74,6 +69,17 @@ const handleRequest = (req, res) => {
     deleteTodo(req, res, match);
   } else if (match && req.method === "GET") {
     getTodo(req, res, match);
+  } else if (req.url === "/todo" && req.method === "GET") {
+    getAllTodo(req, res);
+  } else if (match && req.method === "POST") {
+    let data = []
+    req.on('data', chunk => {
+      data.push(chunk)
+    })
+    req.on('end', () => {
+      let parsedData = JSON.parse(data);
+      updateTodo(req, res, match, parsedData);
+    })
   } else {
     res.statusCode = 404;
     res.setHeader("Content-Type", "text/plain");
@@ -88,10 +94,4 @@ server.listen(port, hostname, () => {
   console.log(`Server running at http://${hostname}:${port}/`);
 });
 
-RequestTests.run()
-// } else if (req.method === "PATCH") {
-//   updateTodo(req, res);
-// }
-// } else if (req.url === "/todos" && req.method === "GET") {
-// getAllTodo(req, res);
-// } else {
+RequestTests.run();

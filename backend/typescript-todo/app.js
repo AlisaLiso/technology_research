@@ -6,8 +6,6 @@ var Request_test_1 = require("./__tests__/Request.test");
 var todo = new Todo_1["default"]();
 var hostname = "0.0.0.0";
 var port = 3000;
-var todoTitle = 'New Static Title';
-var newTitle = "New title";
 var createTodo = function (_req, res, data) {
     todo.create(data.title).then(function (data) {
         res.statusCode = 200;
@@ -31,12 +29,9 @@ var getTodo = function (_req, res, match) {
         res.end(JSON.stringify(data));
     });
 };
-var updateTodo = function (_req, res) {
-    var options = {
-        title: newTitle,
-        updated: new Date()
-    };
-    todo.update("title", todoTitle, options).then(function (data) {
+var updateTodo = function (_req, res, match, parsedData) {
+    var idTodo = parseFloat(match[0]);
+    todo.update("id", idTodo, parsedData).then(function (data) {
         res.statusCode = 200;
         res.setHeader("Content-Type", "application/json");
         res.end(JSON.stringify(data));
@@ -67,6 +62,19 @@ var handleRequest = function (req, res) {
     else if (match && req.method === "GET") {
         getTodo(req, res, match);
     }
+    else if (req.url === "/todo" && req.method === "GET") {
+        getAllTodo(req, res);
+    }
+    else if (match && req.method === "POST") {
+        var data_2 = [];
+        req.on('data', function (chunk) {
+            data_2.push(chunk);
+        });
+        req.on('end', function () {
+            var parsedData = JSON.parse(data_2);
+            updateTodo(req, res, match, parsedData);
+        });
+    }
     else {
         res.statusCode = 404;
         res.setHeader("Content-Type", "text/plain");
@@ -78,9 +86,3 @@ server.listen(port, hostname, function () {
     console.log("Server running at http://" + hostname + ":" + port + "/");
 });
 Request_test_1["default"].run();
-// } else if (req.method === "PATCH") {
-//   updateTodo(req, res);
-// }
-// } else if (req.url === "/todos" && req.method === "GET") {
-// getAllTodo(req, res);
-// } else {
