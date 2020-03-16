@@ -3,13 +3,11 @@ import * as fs from 'fs';
 
 const hostname = "0.0.0.0";
 const port = 3000;
-const todoTitle = 'New Static Title';
+const todoTitle = 'Hello world!';
 
-const optionsCreate = {
+const options = {
   hostname,
-  port,
-  path: '/todo',
-  method: 'POST'
+  port
 };
 
 const optionsGet = {
@@ -37,14 +35,14 @@ export default class RequestTests {
   private finishTest: CallableFunction | any;
 
   createTodoTest() {
-    const options = {
-      hostname: '0.0.0.0',
-      port: 3000,
-      path: '/todo',
-      method: 'POST'
-    };
+    const postData = JSON.stringify({
+      'title': todoTitle
+    });
 
-    const req = http.request(options, (res) => {
+    const req = http.request({...options, path: '/todo', method: 'PUT', headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'Content-Length': Buffer.byteLength(postData)
+    }}, (res) => {
       res.on('data', (data) => {
         const stringData = JSON.parse(data.toString());
         this.assert("createTodoTest", stringData.title, todoTitle);
@@ -54,6 +52,7 @@ export default class RequestTests {
     req.on('error', (e) => {
       console.error(e);
     });
+    req.write(postData);
     req.end();
   }
 
@@ -188,7 +187,7 @@ export default class RequestTests {
 
   static async run() {
     const requestTests = new RequestTests();
-    const tests = [requestTests.createTodoTest, requestTests.deleteTodoTest, requestTests.getTodoTest, requestTests.updateTodoTest, requestTests.getAllTodoTest];
+    const tests = [requestTests.createTodoTest]; //  requestTests.deleteTodoTest, requestTests.getTodoTest, requestTests.updateTodoTest, requestTests.getAllTodoTest
 
     for (const test of tests) {
       await requestTests.cleanUp(test).then(({ title, isSuccess, original = null, target = null }: { title: string, isSuccess: boolean, original: object | null, target: object | null }) => {

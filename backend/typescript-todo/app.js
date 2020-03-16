@@ -2,13 +2,14 @@
 exports.__esModule = true;
 var http = require("http");
 var Todo_1 = require("./src/ts/components/Todo");
+var Request_test_1 = require("./__tests__/Request.test");
 var todo = new Todo_1["default"]();
 var hostname = "0.0.0.0";
 var port = 3000;
 var todoTitle = 'New Static Title';
 var newTitle = "New title";
-var createTodo = function (_req, res) {
-    todo.create(todoTitle).then(function (data) {
+var createTodo = function (_req, res, data) {
+    todo.create(data.title).then(function (data) {
         res.statusCode = 200;
         res.setHeader("Content-Type", "application/json");
         res.end(JSON.stringify(data));
@@ -47,30 +48,34 @@ var getAllTodo = function (_req, res) {
     });
 };
 var handleRequest = function (req, res) {
-    if (req.url === "/todo") {
-        if (req.method === "POST") {
-            createTodo(req, res);
+    var data = [];
+    req.on('data', function (chunk) {
+        data.push(chunk);
+    });
+    req.on('end', function () {
+        var parsedData = JSON.parse(data);
+        if (req.url === "/todo" && req.method === "PUT") { // POST TODO
+            createTodo(req, res, parsedData);
         }
-        else if (req.method === "DELETE") {
-            deleteTodo(req, res);
+        else {
+            res.statusCode = 404;
+            res.setHeader("Content-Type", "text/plain");
+            res.end("Page doesn't exist");
         }
-        else if (req.method === "GET") {
-            getTodo(req, res);
-        }
-        else if (req.method === "PATCH") {
-            updateTodo(req, res);
-        }
-    }
-    else if (req.url === "/todos" && req.method === "GET") {
-        getAllTodo(req, res);
-    }
-    else {
-        res.statusCode = 404;
-        res.setHeader("Content-Type", "text/plain");
-        res.end("Page doesn't exist");
-    }
+    });
 };
 var server = http.createServer(handleRequest);
 server.listen(port, hostname, function () {
     console.log("Server running at http://" + hostname + ":" + port + "/");
 });
+Request_test_1["default"].run();
+// if (req.method === "DELETE") {
+//   deleteTodo(req, res);
+// } else if (req.method === "GET") {
+//   getTodo(req, res);
+// } else if (req.method === "PATCH") {
+//   updateTodo(req, res);
+// }
+// } else if (req.url === "/todos" && req.method === "GET") {
+// getAllTodo(req, res);
+// } else {

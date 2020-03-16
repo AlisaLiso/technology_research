@@ -1,7 +1,7 @@
 import * as fs from 'fs';
-import FileStorageConfiguration from '../storage/FileStorageConfiguration';
-import FileStorage from '../storage/FileStorage';
-import Todo from '../components/Todo';
+import FileStorageConfiguration from '../src/ts/storage/FileStorageConfiguration';
+import FileStorage from '../src/ts/storage/FileStorage';
+import Todo from '../src/ts/components/Todo';
 
 export default class TodoTests {
   private storage: FileStorage;

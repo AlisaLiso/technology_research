@@ -1,6 +1,6 @@
 import * as fs from 'fs';
-import FileStorageConfiguration from '../storage/FileStorageConfiguration';
-import FileStorage from '../storage/FileStorage';
+import FileStorageConfiguration from '../src/ts/storage/FileStorageConfiguration';
+import FileStorage from '../src/ts/storage/FileStorage';
 
 export default class StorageTest {
   private storage: FileStorage;
