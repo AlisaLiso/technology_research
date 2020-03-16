@@ -82,26 +82,24 @@ export default class RequestTests {
   }
 
   getTodoTest() {
-    const req = http.request(optionsCreate, (res) => {
-      res.on('data', (_data) => {
-        const reqOnGet = http.request(optionsGet, (res) => {
-          res.on('data', (data) => {
-            const stringData = JSON.parse(data.toString());
-            this.assert("getTodoTest", stringData.title, todoTitle);
-          });
+    const newTodo = todo.create(todoTitle);
+    newTodo.then((data) => {
+      const req = http.request({
+        ...options, path: `/todo/${data.id}`, method: 'GET', headers: {
+          'Content-Type': 'application/json'
+        }
+      }, (res) => {
+        res.on('data', (data) => {
+          const stringData = JSON.parse(data.toString());
+          this.assert("getTodoTest", stringData.title, todoTitle);
         });
-
-        reqOnGet.on('error', (e) => {
-          console.error(e);
-        });
-        reqOnGet.end();
       });
-    });
 
-    req.on('error', (e) => {
-      console.error(e);
+      req.on('error', (e) => {
+        console.error(e);
+      });
+      req.end();
     });
-    req.end();
   }
 
   getAllTodoTest() {
@@ -179,14 +177,14 @@ export default class RequestTests {
 
   static async run() {
     const requestTests = new RequestTests();
-    const tests = [requestTests.createTodoTest, requestTests.deleteTodoTest]; // requestTests.getTodoTest, requestTests.updateTodoTest, requestTests.getAllTodoTest
+    const tests = [requestTests.createTodoTest, requestTests.deleteTodoTest, requestTests.getTodoTest]; // requestTests.updateTodoTest, requestTests.getAllTodoTest
 
     for (const test of tests) {
       await requestTests.cleanUp(test).then(({ title, isSuccess, original = null, target = null }: { title: string, isSuccess: boolean, original: object | null, target: object | null }) => {
         if (isSuccess) {
-          console.log(`${title}: Success`);
+          console.log(`${title}:`, '\u001b[32;1m • \u001b[0m');
         } else {
-          console.log(`${title}: ${original} not equal to ${target}`);
+          console.log(`${title}: \u001b[31;1m ${original} not equal to ${target} \u001b[0m`);
         }
       });
     }

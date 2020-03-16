@@ -118,24 +118,21 @@ var RequestTests = /** @class */ (function () {
     };
     RequestTests.prototype.getTodoTest = function () {
         var _this = this;
-        var req = http.request(optionsCreate, function (res) {
-            res.on('data', function (_data) {
-                var reqOnGet = http.request(optionsGet, function (res) {
-                    res.on('data', function (data) {
-                        var stringData = JSON.parse(data.toString());
-                        _this.assert("getTodoTest", stringData.title, todoTitle);
-                    });
+        var newTodo = todo.create(todoTitle);
+        newTodo.then(function (data) {
+            var req = http.request(__assign(__assign({}, options), { path: "/todo/" + data.id, method: 'GET', headers: {
+                    'Content-Type': 'application/json'
+                } }), function (res) {
+                res.on('data', function (data) {
+                    var stringData = JSON.parse(data.toString());
+                    _this.assert("getTodoTest", stringData.title, todoTitle);
                 });
-                reqOnGet.on('error', function (e) {
-                    console.error(e);
-                });
-                reqOnGet.end();
             });
+            req.on('error', function (e) {
+                console.error(e);
+            });
+            req.end();
         });
-        req.on('error', function (e) {
-            console.error(e);
-        });
-        req.end();
     };
     RequestTests.prototype.getAllTodoTest = function () {
         var _this = this;
@@ -213,7 +210,7 @@ var RequestTests = /** @class */ (function () {
                 switch (_a.label) {
                     case 0:
                         requestTests = new RequestTests();
-                        tests = [requestTests.createTodoTest, requestTests.deleteTodoTest];
+                        tests = [requestTests.createTodoTest, requestTests.deleteTodoTest, requestTests.getTodoTest];
                         _i = 0, tests_1 = tests;
                         _a.label = 1;
                     case 1:
@@ -222,10 +219,10 @@ var RequestTests = /** @class */ (function () {
                         return [4 /*yield*/, requestTests.cleanUp(test).then(function (_a) {
                                 var title = _a.title, isSuccess = _a.isSuccess, _b = _a.original, original = _b === void 0 ? null : _b, _c = _a.target, target = _c === void 0 ? null : _c;
                                 if (isSuccess) {
-                                    console.log(title + ": Success");
+                                    console.log(title + ":", '\u001b[32;1m • \u001b[0m');
                                 }
                                 else {
-                                    console.log(title + ": " + original + " not equal to " + target);
+                                    console.log(title + ": \u001B[31;1m " + original + " not equal to " + target + " \u001B[0m");
                                 }
                             })];
                     case 2:

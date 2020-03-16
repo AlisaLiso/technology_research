@@ -18,14 +18,14 @@ var createTodo = function (_req, res, data) {
 var deleteTodo = function (_req, res, match) {
     var idTodo = parseFloat(match[0]);
     todo["delete"]("id", idTodo).then(function (data) {
-        console.log(data);
         res.statusCode = 200;
         res.setHeader("Content-Type", "application/json");
         res.end(JSON.stringify(data));
     });
 };
-var getTodo = function (_req, res) {
-    todo.get("title", todoTitle).then(function (data) {
+var getTodo = function (_req, res, match) {
+    var idTodo = parseFloat(match[0]);
+    todo.get("id", idTodo).then(function (data) {
         res.statusCode = 200;
         res.setHeader("Content-Type", "application/json");
         res.end(JSON.stringify(data));
@@ -50,6 +50,7 @@ var getAllTodo = function (_req, res) {
     });
 };
 var handleRequest = function (req, res) {
+    var match = req.url.match(/\d.+$/);
     if (req.url === "/todo" && req.method === "PUT") { // POST TODO
         var data_1 = [];
         req.on('data', function (chunk) {
@@ -60,9 +61,11 @@ var handleRequest = function (req, res) {
             createTodo(req, res, parsedData);
         });
     }
-    else if (req.url.match(/\d.+$/) && req.method === "DELETE") {
-        var match = req.url.match(/\d.+$/);
+    else if (match && req.method === "DELETE") {
         deleteTodo(req, res, match);
+    }
+    else if (match && req.method === "GET") {
+        getTodo(req, res, match);
     }
     else {
         res.statusCode = 404;
@@ -75,10 +78,6 @@ server.listen(port, hostname, function () {
     console.log("Server running at http://" + hostname + ":" + port + "/");
 });
 Request_test_1["default"].run();
-// if (req.method === "DELETE") {
-//   deleteTodo(req, res);
-// } else if (req.method === "GET") {
-//   getTodo(req, res);
 // } else if (req.method === "PATCH") {
 //   updateTodo(req, res);
 // }

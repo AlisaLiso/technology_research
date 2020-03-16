@@ -19,6 +19,7 @@ const createTodo = (_req, res, data) => { // curl -X PUT -H "Content-Type: appli
 
 const deleteTodo = (_req, res, match) => {
   const idTodo = parseFloat(match[0]);
+
   todo.delete("id", idTodo).then((data) => {
     res.statusCode = 200;
     res.setHeader("Content-Type", "application/json");
@@ -26,8 +27,10 @@ const deleteTodo = (_req, res, match) => {
   });
 }
 
-const getTodo = (_req, res) => {
-  todo.get("title", todoTitle).then((data) => {
+const getTodo = (_req, res, match) => {
+  const idTodo = parseFloat(match[0]);
+
+  todo.get("id", idTodo).then((data) => {
     res.statusCode = 200;
     res.setHeader("Content-Type", "application/json");
     res.end(JSON.stringify(data));
@@ -56,6 +59,8 @@ const getAllTodo = (_req, res) => {
 }
 
 const handleRequest = (req, res) => {
+  const match = req.url.match(/\d.+$/);
+
   if (req.url === "/todo" && req.method === "PUT") { // POST TODO
     let data = []
     req.on('data', chunk => {
@@ -65,9 +70,10 @@ const handleRequest = (req, res) => {
       let parsedData = JSON.parse(data);
       createTodo(req, res, parsedData);
     })
-  } else if (req.url.match(/\d.+$/) && req.method === "DELETE") {
-    const match = req.url.match(/\d.+$/);
+  } else if (match && req.method === "DELETE") {
     deleteTodo(req, res, match);
+  } else if (match && req.method === "GET") {
+    getTodo(req, res, match);
   } else {
     res.statusCode = 404;
     res.setHeader("Content-Type", "text/plain");
@@ -83,10 +89,6 @@ server.listen(port, hostname, () => {
 });
 
 RequestTests.run()
-// if (req.method === "DELETE") {
-//   deleteTodo(req, res);
-// } else if (req.method === "GET") {
-//   getTodo(req, res);
 // } else if (req.method === "PATCH") {
 //   updateTodo(req, res);
 // }
